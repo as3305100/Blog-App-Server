@@ -11,7 +11,7 @@ export const createBlog = handleAsync(async (req, res) => {
   const imageLocalPath = req?.file?.path;
   const userId = req.userId;
 
-  if (imageLocalPath) {
+  if (!imageLocalPath) {
     throw new ApiError(400, "Image is required");
   }
 
@@ -41,7 +41,10 @@ export const createBlog = handleAsync(async (req, res) => {
     owner: userId,
   });
 
-  return new ApiResponse(201, "Blog created successfully", newBlog).send(res);
+  const blogData = newBlog.toObject()
+  delete blogData.imageId
+
+  return new ApiResponse(201, "Blog created successfully", blogData).send(res);
 });
 
 export const updateBlog = handleAsync(async (req, res) => {
@@ -132,7 +135,7 @@ export const getMyBlogs = handleAsync(async (req, res) => {
     Blog.aggregate([
       {
         $match: {
-          owner: mongoose.Types.ObjectId(userId),
+          owner: new mongoose.Types.ObjectId(userId),
         },
       },
       {

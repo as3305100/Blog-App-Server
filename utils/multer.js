@@ -3,7 +3,7 @@ import { ApiError } from "../middlewares/error.middleware.js"
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, "./uploads")
+        cb(null, "./temp")
     },
     filename: function(req, file, cb) {
         const uniqueSuffix = Date.now() + "-" + Math.floor(Math.random() * 1000)

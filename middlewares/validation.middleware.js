@@ -7,6 +7,7 @@ const signupSchema = Joi.object({
   fullname: userValidationField.fullname,
   email: userValidationField.email,
   password: userValidationField.password,
+  avatar: Joi.any().optional(),
 });
 
 const loginSchema = Joi.object({
@@ -16,6 +17,7 @@ const loginSchema = Joi.object({
 
 const updateSchema = Joi.object({
   fullname: userValidationField.fullname,
+  avatar: Joi.any().optional(),
 });
 
 const blogSchema = Joi.object({
@@ -23,6 +25,7 @@ const blogSchema = Joi.object({
   slug: blogValidationField.slug,
   content: blogValidationField.content,
   status: blogValidationField.status,
+  image: Joi.any().optional(),
 });
 
 export const signupValidation = validate(signupSchema);

@@ -15,7 +15,7 @@ export const userValidationField = {
     "string.min": "Fullname length should not less than 3 characters",
     "string.max": "Fullname length not more than 50 characters",
   }),
-  password: Joi.string().trim().min(8).max(60).required.messages({
+  password: Joi.string().trim().min(8).max(60).required().messages({
     "any.required": "Password is required",
     "string.min": "Password must be at least 8 characters",
     "string.max": "Password must not exceed 60 characters",

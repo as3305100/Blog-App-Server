@@ -1,3 +1,4 @@
+import jwt from "jsonwebtoken";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { ApiError, handleAsync } from "../middlewares/error.middleware.js";
 import { safeUnlink } from "../utils/safeUnlink.js";
@@ -51,7 +52,6 @@ const generateAccessRefreshToken = async (userId) => {
 
     const accessToken = user.getAccessToken();
     const refreshToken = user.getRefreshToken();
-
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
@@ -63,7 +63,7 @@ const generateAccessRefreshToken = async (userId) => {
 export const loginUser = handleAsync(async (req, res) => {
   const { email, password } = req.validated;
 
-  const existedUser = await User.findOne({ email });
+  const existedUser = await User.findOne({ email }).select("+password");
 
   if (!existedUser) {
     throw new ApiError(404, "User not found. Please signup first.");
@@ -184,7 +184,7 @@ export const refreshAccessToken = handleAsync(async (req, res) => {
     throw new ApiError(400, "Invalid Refresh Token. Please login");
   }
 
-  const user = await User.findById(decoded._id).select("+refreshToken").lean();
+  const user = await User.findById(decoded._id).select("+refreshToken");
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -230,7 +230,7 @@ export const logoutUser = handleAsync(async (req, res) => {
 
   user.refreshToken = "";
 
-  await user.save();
+  await user.save({ validateBeforeSave: false });
 
   res
     .clearCookie("accessToken", cookieOptions)
@@ -238,4 +238,3 @@ export const logoutUser = handleAsync(async (req, res) => {
 
   return new ApiResponse(200, "User logout successful").send(res);
 });
-

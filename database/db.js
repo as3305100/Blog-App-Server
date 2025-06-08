@@ -41,9 +41,9 @@ class DataConnection {
         family: 4,
       };
 
-      if (process.env.NODE_ENV === "development") {
-        mongoose.set("debug", true);
-      }
+      // if (process.env.NODE_ENV === "development") {
+      //   mongoose.set("debug", true);
+      // }
 
       await mongoose.connect(process.env.MONGO_URI, connectionOptions);
       this.retryCount = 0;
