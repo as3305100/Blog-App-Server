@@ -29,10 +29,11 @@ export const createUser = handleAsync(async (req, res) => {
     avatarId: public_id,
   });
 
-  user.password = undefined;
-  user.avatarId = undefined;
+  const userObj = user.toObject();
+  userObj.avatarId = undefined;
+  userObj.password = undefined;
 
-  return new ApiResponse(201, "User created successfully", user).send(res);
+  return new ApiResponse(201, "User created successfully", userObj).send(res);
 });
 
 const cookieOptions = {
@@ -121,7 +122,7 @@ export const updateUserProfile = handleAsync(async (req, res) => {
   const { fullname } = req.validated;
   const avatar = req.file?.path;
 
-  const user = await User.findById(userId).select("+avatarId").lean();
+  const user = await User.findById(userId).select("+avatarId");
 
   if (!user) {
     if (avatar) {
@@ -132,22 +133,15 @@ export const updateUserProfile = handleAsync(async (req, res) => {
 
   let previousId = user.avatarId;
 
-  let media = {
-    public_id: user.avatarId,
-    url: user.avatar,
-  };
-
   if (avatar) {
     const { public_id, url } = await uploadFile(avatar);
-    media.public_id = public_id;
-    media.url = url;
+    user.avatar = url;
+    user.avatarId = public_id;
   }
 
   user.fullname = fullname;
-  user.avatar = media.url;
-  user.avatarId = media.public_id;
 
-  await user.save({ validateBeforeSave: false });
+  await user.save();
 
   if (avatar && previousId) {
     await deleteFile(previousId);
@@ -228,15 +222,15 @@ export const refreshAccessToken = handleAsync(async (req, res) => {
 export const logoutUser = handleAsync(async (req, res) => {
   const userId = req.userId;
 
-  const user = await User.findById(userId).select("+refreshToken").lean();
+  const user = await User.findById(userId).select("+refreshToken");
 
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  user.refreshToken = undefined;
+  user.refreshToken = "";
 
-  await user.save({ validateBeforeSave: true });
+  await user.save();
 
   res
     .clearCookie("accessToken", cookieOptions)
@@ -245,6 +239,3 @@ export const logoutUser = handleAsync(async (req, res) => {
   return new ApiResponse(200, "User logout successful").send(res);
 });
 
-// export const deleteUserAccount = handleAsync(async (req, res) => {
-   
-// });

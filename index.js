@@ -9,6 +9,8 @@ import connectDB, { getDBStatus } from "./database/db.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors"
 import healthRouter from "./routes/health.route.js"
+import userRouter from "./routes/user.route.js"
+import blogRouter from "./routes/blog.route.js"
 
 dotenv.config();
 const app = express();
@@ -59,6 +61,8 @@ app.use(
 // api endpoint
 
 app.use("/health", healthRouter)
+app.use("/api/v1/users", userRouter)
+app.use("/api/v1/blogs", blogRouter)
 
 // 404 handler
 app.use((req, res) => {

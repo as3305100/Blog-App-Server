@@ -14,6 +14,10 @@ const loginSchema = Joi.object({
   password: userValidationField.password,
 });
 
+const updateSchema = Joi.object({
+  fullname: userValidationField.fullname,
+});
+
 const blogSchema = Joi.object({
   title: blogValidationField.title,
   slug: blogValidationField.slug,
@@ -23,4 +27,5 @@ const blogSchema = Joi.object({
 
 export const signupValidation = validate(signupSchema);
 export const loginValidation = validate(loginSchema);
+export const updateValidation = validate(updateSchema);
 export const blogValidtion = validate(blogSchema);
