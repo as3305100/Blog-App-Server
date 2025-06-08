@@ -12,7 +12,7 @@ export const createUser = handleAsync(async (req, res) => {
     throw new ApiError(400, "Avatar is required");
   }
 
-  const existedUser = await User.findOne({ email });
+  const existedUser = await User.findOne({ email }).lean();
 
   if (existedUser) {
     await safeUnlink(avatar);
@@ -83,6 +83,8 @@ export const loginUser = handleAsync(async (req, res) => {
     fullname: existedUser.fullname,
     email: existedUser.email,
     avatar: existedUser.avatar,
+    accessToken,
+    refreshToken,
   };
 
   res
@@ -101,7 +103,7 @@ export const loginUser = handleAsync(async (req, res) => {
 export const getUserProfile = handleAsync(async (req, res) => {
   const userId = req.userId;
 
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).lean();
 
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -119,7 +121,7 @@ export const updateUserProfile = handleAsync(async (req, res) => {
   const { fullname } = req.validated;
   const avatar = req.file?.path;
 
-  const user = await User.findById(userId).select("+avatarId");
+  const user = await User.findById(userId).select("+avatarId").lean();
 
   if (!user) {
     if (avatar) {
@@ -164,8 +166,85 @@ export const updateUserProfile = handleAsync(async (req, res) => {
   ).send(res);
 });
 
-export const refreshAccessToken = handleAsync(async (req, res) => {});
+export const refreshAccessToken = handleAsync(async (req, res) => {
+  const tokenFromHeader = req.headers?.authorization
+    ?.trim()
+    .startswith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : undefined;
 
-export const logoutUser = handleAsync(async (req, res) => {});
+  const refreshTokenClient = req.cookies?.refreshToken || tokenFromHeader;
 
-export const deleteUserAccount = handleAsync(async (req, res) => {});
+  if (!refreshTokenClient) {
+    throw new ApiError(
+      400,
+      "Refresh Token is not present. User needs to login again."
+    );
+  }
+
+  let decoded;
+
+  try {
+    decoded = jwt.verify(refreshTokenClient, process.env.REFRESH_TOKEN_SECRET);
+  } catch (error) {
+    throw new ApiError(400, "Invalid Refresh Token. Please login");
+  }
+
+  const user = await User.findById(decoded._id).select("+refreshToken").lean();
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  if (user.refreshToken !== refreshTokenClient) {
+    throw new ApiError(400, "Refresh token does not match");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessRefreshToken(
+    user._id
+  );
+
+  user.refreshToken = refreshToken;
+
+  await user.save({ validateBeforeSave: false });
+
+  res
+    .cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      maxAge: 4 * 60 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+  return new ApiResponse(200, "Access token renewed successfully", {
+    accessToken,
+    refreshToken,
+    _id: user._id,
+  }).send(res);
+});
+
+export const logoutUser = handleAsync(async (req, res) => {
+  const userId = req.userId;
+
+  const user = await User.findById(userId).select("+refreshToken").lean();
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  user.refreshToken = undefined;
+
+  await user.save({ validateBeforeSave: true });
+
+  res
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions);
+
+  return new ApiResponse(200, "User logout successful").send(res);
+});
+
+// export const deleteUserAccount = handleAsync(async (req, res) => {
+   
+// });
