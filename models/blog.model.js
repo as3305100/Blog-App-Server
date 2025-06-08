@@ -1,4 +1,3 @@
-import { required } from "joi";
 import mongoose from "mongoose";
 
 const blogSchema = new mongoose.Schema({
@@ -37,7 +36,8 @@ const blogSchema = new mongoose.Schema({
     },
     imageId: {
         type: String,
-        required: [true, "Image id is required"]
+        required: [true, "Image id is required"],
+        select: false
     },
     owner: {
         type: mongoose.Schema.Types.ObjectId,
