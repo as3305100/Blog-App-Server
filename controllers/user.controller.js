@@ -38,8 +38,8 @@ export const createUser = handleAsync(async (req, res) => {
 });
 
 const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
+  httpOnly: false,
+  secure: false
 };
 
 const generateAccessRefreshToken = async (userId) => {
