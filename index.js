@@ -16,22 +16,19 @@ dotenv.config();
 const app = express();
 
 const PORT = parseInt(process.env.PORT) || 8000;
-const MAX = parseInt(process.env.RATE_LIMIT_MAX) || 100;
-const MINUTE = parseInt(process.env.WS_MINUTE) || 15;
+// const MAX = parseInt(process.env.RATE_LIMIT_MAX) || 100;
+// const MINUTE = parseInt(process.env.WS_MINUTE) || 15;
 
-const limiter = rateLimit({
-  windowMs: MINUTE,
-  max: MAX,
-  message: "Too many requests from this IP, please try again later.",
-  validate: {
-    ip: false
-  }
-});
+// const limiter = rateLimit({
+//   windowMs: MINUTE,
+//   max: MAX,
+//   message: "Too many requests from this IP, please try again later.",
+// });
 
 // security middleware
 app.use(helmet());
 app.use(hpp());
-app.use("/api", limiter);
+// app.use("/api", limiter);
 
 // logging middleware
 
