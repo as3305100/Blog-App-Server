@@ -23,6 +23,9 @@ const limiter = rateLimit({
   windowMs: MINUTE,
   max: MAX,
   message: "Too many requests from this IP, please try again later.",
+  validate: {
+    ip: false
+  }
 });
 
 // security middleware
