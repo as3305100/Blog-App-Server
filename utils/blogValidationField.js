@@ -15,10 +15,10 @@ export const blogValidationField = {
     "string.max": "Slug length must not exceed 70 characters",
   }),
 
-  content: Joi.string().trim().min(3).max(8000).required().messages({
+  content: Joi.string().trim().min(8).max(8000).required().messages({
     "any.required": "Content is required",
     "string.empty": "Content is required",
-    "string.min": "Content length not less than 3 characters",
+    "string.min": "Content length not less than 8 characters",
     "string.max": "Content length must not exceed 8000 characters",
   }),
 

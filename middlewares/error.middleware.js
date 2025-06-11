@@ -5,6 +5,7 @@ export class ApiError extends Error {
     this.status = statusCode < 500 ? "fail" : "error";
     this.isOperational = true;
     this.errors = errors;
+    this.success = false
     
     Error.captureStackTrace(this, this.constructor);
   }
@@ -29,7 +30,8 @@ export const errorHandler = (err, req, res, next) => {
          status: status,
          errors: err.errors,
          message: err.message,
-         statusCode: statusCode
+         statusCode: statusCode,
+         success: err.success
       })
    } else {
       if(err.isOperational){
@@ -37,12 +39,14 @@ export const errorHandler = (err, req, res, next) => {
             status: status,
             statusCode: statusCode,
             message: err.message,
-            errors: err.errors 
+            errors: err.errors,
+            success: err.success
          })
       }else{
          res.status(statusCode).json({
             status: "error",
-            message: "something went wrong"
+            message: "something went wrong",
+            success: err.success
          })
       }
    }

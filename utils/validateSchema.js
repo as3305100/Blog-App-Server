@@ -5,9 +5,7 @@ export const validate = (schema) => {
   return async (req, res, next) => {
     const localFilePath = req?.file?.path;
 
-    const { error, value } = schema.validate(req.body, {
-      abortEarly: false,
-    });
+    const { error, value } = schema.validate(req.body);
 
     if (error) {
       if (localFilePath) {
@@ -19,8 +17,9 @@ export const validate = (schema) => {
         });
       }
 
-      const messages = error.details.map((err) => err.message);
-      throw new ApiError(400, "validation error", messages);
+      const message = error?.details[0]?.message || "Validation Error"
+
+      throw new ApiError(400, message);
     }
     req.validated = value;
     next();
